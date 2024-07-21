@@ -1,5 +1,7 @@
 #include <Windows.h>
 
+// ver 1
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE, LPSTR, int) {
