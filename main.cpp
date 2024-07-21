@@ -1,6 +1,15 @@
 #include <Windows.h>
 #include <cstdint>
+#include <string>
+#include <format>
 
+void Log(const std::string& message) {
+    OutputDebugStringA(message.c_str());
+}
+
+void Log(const std::wstring& message) {
+    OutputDebugStringW(message.c_str());
+}
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // メッセージに応じてゲーム固有の処理を行う
@@ -77,6 +86,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         }
     }
 
+    // 文字列を格納する
+    std::string str0{ "STRING!!!＊＊＊＊＊＊＊＊＊" };
+
+    // 整数を文字列にする
+    std::string str1{ std::to_string(10) };
+
+    // string->wstring
+    std::wstring ConvertString(const std::string & str);
+    // wstring->string
+    std::string ConvertString(const std::wstring & str);
+
+    // 変数から型を推論してくれる
+    Log(std::format("enemyHp:{}, texturePath:{}\n", 2, "aaaa"));
 
 
     return 0;
