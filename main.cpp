@@ -1214,8 +1214,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+    textureResource->Release();
     materialResource->Release();
-
+    wvpResource->Release();
     vertexResource->Release();
     graphicsPipelineState->Release();
     signatureBlob->Release();
@@ -1227,7 +1228,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     vertexShaderBlob->Release();
 
     fence->Release();
+    dsvDescriptorHeap->Release();
     rtvDescriptorHeap->Release();
+    srvDescriptorHeap->Release();
+    depthStencilResource->Release();
     swapChainResources[0]->Release();
     swapChainResources[1]->Release();
     swapChain->Release();
