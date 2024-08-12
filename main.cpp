@@ -1079,6 +1079,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+
+    /*
     // 1枚目の三角形
     vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };// 左下
     vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
@@ -1093,6 +1095,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
     vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };// 右下
     vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+    */
+
+    // 左下
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+    // 左上
+    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+    // 右下
+    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+    // 右上
+    vertexDataSprite[3].position = { 640.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[3].texcoord = { 1.0f, 0.0f };
+
+
 
     // Sprite用のTransformationMatrix用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
     ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
@@ -1109,6 +1127,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // --------------------------------------
 
+    // 頂点インデックス
+    ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+    D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+    // リソースの先頭のアドレスから使う
+    indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+    // 使用するリソースのサイズはインデックス6つ分のサイズ
+    indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+    // インデックスはuint32_tとする
+    indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
+    // インデックスリソースにデータを書き込む
+    uint32_t* indexDataSprite = nullptr;
+    indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+    indexDataSprite[0] = 0;	indexDataSprite[1] = 1;	indexDataSprite[2] = 2;
+    indexDataSprite[3] = 1;	indexDataSprite[4] = 3;	indexDataSprite[5] = 2;
+
+
+    // --------------------------------------
 
     MSG msg{};
     // ウィンドウの×ボタンが押されるまでループ
@@ -1149,7 +1186,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
         Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
         *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
-
 
         // ImGuiの内部コマンドを生成する
         ImGui::Render();
@@ -1207,17 +1243,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
         // SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
         commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-
         // 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
         commandList->DrawInstanced(6, 1, 0, 0);
 
-
+        
         // Spriteの描画。変更が必要なものだけ変更する
         commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);   // VBVを設定
+        // インデックス
+        commandList->IASetIndexBuffer(&indexBufferViewSprite);// IBVを設定
         // TransformationMatrixCBufferの場所を設定
         commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
         // 描画！（DrawCall/ドローコール）
-        commandList->DrawInstanced(6, 1, 0, 0);
+        //commandList->DrawInstanced(6, 1, 0, 0);
+        // 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
+        commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+        
+
 
 
         // 実際のcommandListのImGuiの描画コマンドを積む
@@ -1287,6 +1328,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
+    indexResourceSprite->Release();
     vertexResourceSprite->Release();
     transformationMatrixResourceSprite->Release();
     textureResource->Release();
