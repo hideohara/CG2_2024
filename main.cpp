@@ -62,9 +62,16 @@ struct VertexData {
     Vector2 texcoord;
 };
 
+struct MaterialData
+{
+    std::string textureFilePath;
+};
+
 struct ModelData {
     std::vector<VertexData> vertices;
+    MaterialData material;
 };
+
 
 
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
@@ -296,6 +303,34 @@ std::string ConvertString(const std::wstring& str) {
     return result;
 }
 
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
+{
+    // 1. 中で必要となる変数の宣言
+    // 2. ファイルを開く
+    MaterialData materialData; // 構築するMaterialData
+    std::string line; // ファイルから読んだ1行を格納するもの
+    std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
+    assert(file.is_open());  // とりあえず開けなかったら止める
+
+    // 3. 実際にファイルを読み、MaterialDataを構築していく
+    while (std::getline(file, line)) {
+        std::string identifier;
+        std::istringstream s(line);
+        s >> identifier;
+
+        // identifierに応じた処理
+        if (identifier == "map_Kd") {
+            std::string textureFilename;
+            s >> textureFilename;
+            // 連結してファイルパスにする
+            materialData.textureFilePath = directoryPath + "/" + textureFilename;
+        }
+    }
+
+    // 4. MaterialData を返す
+    return materialData;
+}
+
 // Obj 読み込み
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename)
 {
@@ -320,12 +355,14 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
         if (identifier == "v") {
             Vector4 position;
             s >> position.x >> position.y >> position.z;
+            position.z *= -1.0f;
             position.w = 1.0f;
             positions.push_back(position);
         }
         else if (identifier == "vt") {
             Vector2 texcoord;
             s >> texcoord.x >> texcoord.y;
+            texcoord.y = 1.0f - texcoord.y;
             texcoords.push_back(texcoord);
         }
         else if (identifier == "vn") {
@@ -359,14 +396,19 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
             modelData.vertices.push_back(triangle[1]);
             modelData.vertices.push_back(triangle[0]);
         }
+        else if (identifier == "mtllib") {
+            // materialTemplateLibraryファイルの名前を取得する
+            std::string materialFilename;
+            s >> materialFilename;
+            // 基本的にobjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す
+            modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+        }
+
     }
-  
 
     // 4. ModelDataを返す
     return modelData;
 }
-
-
 
 DirectX::ScratchImage LoadTexture(const std::string& filePath)
 {
@@ -1002,7 +1044,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
     // モデル読み込み
-    ModelData modelData = LoadObjFile("resources", "plane.obj");
+    //ModelData modelData = LoadObjFile("resources", "plane.obj");
+    ModelData modelData = LoadObjFile("resources", "axis.obj");
+    //ModelData modelData = LoadObjFile("resources", "cube.obj");
     // 頂点リソースを作る
     ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
@@ -1091,8 +1135,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // Transform変数を作る
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
     
-    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -5.0f} };
-    
+    // Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
+    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
     // ImGuiの初期化。詳細はさして重要ではないので解説は省略する。
@@ -1110,7 +1155,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // Textureを読んで転送する
-    DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+    //DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+    DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePath);
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
     UploadTextureData(textureResource, mipImages);
