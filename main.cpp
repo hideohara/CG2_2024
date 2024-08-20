@@ -1284,10 +1284,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //ImGui::ShowDemoWindow();
         ImGui::Begin("Settings");
         ImGui::ColorEdit4("material", &materialData->x, ImGuiColorEditFlags_AlphaPreview);
+        ImGui::SliderAngle("rotate.y", &transform.rotate.y);
         ImGui::End();
 
 
-        transform.rotate.y += 0.03f;
+        //transform.rotate.y += 0.03f;
         //Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
         //*wvpData = worldMatrix;
 
