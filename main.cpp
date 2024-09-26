@@ -1044,8 +1044,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
     // モデル読み込み
-    //ModelData modelData = LoadObjFile("resources", "plane.obj");
-    ModelData modelData = LoadObjFile("resources", "axis.obj");
+    ModelData modelData = LoadObjFile("resources", "plane.obj");
+    //ModelData modelData = LoadObjFile("resources", "axis.obj");
     //ModelData modelData = LoadObjFile("resources", "cube.obj");
     // 頂点リソースを作る
     ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -1366,6 +1366,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //commandList->DrawInstanced(6, 1, 0, 0);
         commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
         
+        /*
         // Spriteの描画。変更が必要なものだけ変更する
         commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);   // VBVを設定
         // インデックス
@@ -1376,7 +1377,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //commandList->DrawInstanced(6, 1, 0, 0);
         // 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
         commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-        
+        */
 
 
 
