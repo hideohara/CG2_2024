@@ -986,9 +986,46 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // BlendStateの設定
-    D3D12_BLEND_DESC blendDesc{};
+    //D3D12_BLEND_DESC blendDesc{};
     // すべての色要素を書き込む
+    //blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+    D3D12_BLEND_DESC blendDesc{};
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    
+    // 通常
+    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+    // 加算
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+    // 減算合成（逆減算合成）
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+    // 乗算合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+
+    // スクリーン合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+    // 固定
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
+
+
 
     // RasiterzerStateの設定
     D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -1118,7 +1155,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // 書き込むためのアドレスを取得
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
     // 今回は赤を書き込んでみる
-    *materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+    *materialData = Vector4(1.0f, 1.0f, 1.0f, 0.5f);
+    //*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
     // WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
     ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
