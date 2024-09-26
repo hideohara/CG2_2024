@@ -1042,43 +1042,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     assert(SUCCEEDED(hr));
 
 
-    //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+    ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
     // モデル読み込み
     //ModelData modelData = LoadObjFile("resources", "plane.obj");
-    ModelData modelData = LoadObjFile("resources", "axis.obj");
+    //ModelData modelData = LoadObjFile("resources", "axis.obj");
     //ModelData modelData = LoadObjFile("resources", "cube.obj");
     // 頂点リソースを作る
-    ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
-
-    // 頂点バッファビューを作成する
-    //D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-    //// リソースの先頭のアドレスから使う
-    //vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    //// 使用するリソースのサイズは頂点3つ分のサイズ
-    //vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-    //// 1頂点あたりのサイズ
-    //vertexBufferView.StrideInBytes = sizeof(VertexData);
+    //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
     // 頂点バッファビューを作成する
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();// リソースの先頭のアドレスから使う
-    vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());// 使用するリソースのサイズは頂点のサイズ
-    vertexBufferView.StrideInBytes = sizeof(VertexData);// 1頂点あたりのサイズ
+    // リソースの先頭のアドレスから使う
+    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+    // 使用するリソースのサイズは頂点3つ分のサイズ
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+    // 1頂点あたりのサイズ
+    vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+    // 頂点バッファビューを作成する
+    //D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+    //vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();// リソースの先頭のアドレスから使う
+    //vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());// 使用するリソースのサイズは頂点のサイズ
+    //vertexBufferView.StrideInBytes = sizeof(VertexData);// 1頂点あたりのサイズ
 
 
-    //// 頂点リソースにデータを書き込む
-    //VertexData* vertexData = nullptr;
-    //// 書き込むためのアドレスを取得
-    //vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    //// 左下
-    //vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-    //vertexData[0].texcoord = { 0.0f, 1.0f };
-    //// 上
+    // 頂点リソースにデータを書き込む
+    VertexData* vertexData = nullptr;
+    // 書き込むためのアドレスを取得
+    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+    // 左下
+    vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+    vertexData[0].texcoord = { 0.0f, 1.0f };
+    // 上
     //vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
     //vertexData[1].texcoord = { 0.5f, 0.0f };
-    //// 右下
-    //vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-    //vertexData[2].texcoord = { 1.0f, 1.0f };
+    vertexData[1].position = { -0.5f, 0.5f, 0.0f, 1.0f };
+    vertexData[1].texcoord = { 0.0f, 0.0f };
+    // 右下
+    vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+    vertexData[2].texcoord = { 1.0f, 1.0f };
 
     //// 左下2
     //vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
@@ -1090,10 +1092,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     //vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
     //vertexData[5].texcoord = { 1.0f, 1.0f };
 
+    // 上
+    //vertexData[3].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+    //vertexData[3].texcoord = { 0.5f, 0.0f };
+    vertexData[3].position = { -0.5f, 0.5f, 0.0f, 1.0f };
+    vertexData[3].texcoord = { 0.0f, 0.0f };
+    // 右上
+    vertexData[4].position = { 0.5f, 0.5f, 0.0f, 1.0f };
+    //vertexData[4].texcoord = { 0.0f, 1.0f };
+    vertexData[4].texcoord = { 1.0f, 0.0f };
+    // 右下
+    vertexData[5].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+    vertexData[5].texcoord = { 1.0f, 1.0f };
+
+
     // 頂点リソースにデータを書き込む
-    VertexData* vertexData = nullptr;
-    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
-    std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
+    //VertexData* vertexData = nullptr;
+    //vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+    //std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
 
     // マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
     ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
@@ -1136,7 +1152,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
     
     // Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
-    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+    //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+    // カメラは正面
+    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -5.0f} };
 
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
@@ -1155,8 +1173,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // Textureを読んで転送する
-    //DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
-    DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePath);
+    DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+    //DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePath);
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
     UploadTextureData(textureResource, mipImages);
@@ -1363,8 +1381,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
         commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
         // 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
-        //commandList->DrawInstanced(6, 1, 0, 0);
-        commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+        commandList->DrawInstanced(6, 1, 0, 0);
+        //commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
         
         // Spriteの描画。変更が必要なものだけ変更する
