@@ -692,7 +692,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // ウィンドウの生成
     HWND hwnd = CreateWindow(
         wc.lpszClassName,       // 利用するクラス名
-        L"CG2",                 // タイトルバーの文字（何でも良い）
+        L"GE3 2024",                 // タイトルバーの文字（何でも良い）
         WS_OVERLAPPEDWINDOW,    // よく見るウィンドウスタイル
         CW_USEDEFAULT,          // 表示X座標（Windowsに任せる）
         CW_USEDEFAULT,          // 表示Y座標（WindowsOSに任せる）
@@ -1011,10 +1011,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // Shaderをコンパイルする
-    IDxcBlob* vertexShaderBlob = CompileShader(L"Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+    IDxcBlob* vertexShaderBlob = CompileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(vertexShaderBlob != nullptr);
 
-    IDxcBlob* pixelShaderBlob = CompileShader(L"Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+    IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(pixelShaderBlob != nullptr);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
