@@ -77,6 +77,36 @@ struct TransformationMatrix {
     Matrix4x4 World;
 };
 
+struct Particle {
+    Transform transform;
+    Vector3 velocity;
+};
+
+
+
+// 代入演算子オーバーロード
+// Vector3の足算
+Vector3& operator+=(Vector3& lhv, const Vector3& rhv) {
+    lhv.x += rhv.x;
+    lhv.y += rhv.y;
+    lhv.z += rhv.z;
+    return lhv;
+}
+
+// Vector3の掛け算
+Vector3& operator*=(Vector3& v, float s) {
+    v.x *= s;
+    v.y *= s;
+    v.z *= s;
+    return v;
+}
+
+// Vector3の掛け算
+const Vector3 operator*(const Vector3& v, float s) {
+    Vector3 temp(v);
+    return temp *= s;
+}
+
 
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
     Matrix4x4 result;
@@ -1375,13 +1405,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
     // Transformの作成
-    Transform transforms[kNumInstance];
+    Particle  particles[kNumInstance];
     for (uint32_t index = 0; index < kNumInstance; ++index) {
-        transforms[index].scale = { 1.0f, 1.0f, 1.0f };
-        transforms[index].rotate = { 0.0f, 0.0f, 0.0f };
-        transforms[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+        particles[index].transform.scale = { 1.0f, 1.0f, 1.0f };
+        particles[index].transform.rotate = { 0.0f, 0.0f, 0.0f };
+        particles[index].transform.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+        // 速度を上向きに設定
+        particles[index].velocity = { 0.0f, 1.0f, 0.0f };
     }
 
+    // Δtを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い
+    const float kDeltaTime = 1.0f / 60.0f;
 
     // --------------------------------------
 
@@ -1422,8 +1456,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // instancing
         Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
         for (uint32_t index = 0; index < kNumInstance; ++index) {
+            particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+
+
             Matrix4x4 worldMatrix =
-                MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+                MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
             instancingData[index].WVP = worldViewProjectionMatrix;
             instancingData[index].World = worldMatrix;
