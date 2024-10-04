@@ -28,6 +28,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 
+#include <random>
+
 struct Vector4 {
     float x;
     float y;
@@ -1404,6 +1406,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
     device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
+    std::random_device seedGenerator;
+    std::mt19937 randomEngine(seedGenerator());
+    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
     // Transformの作成
     Particle  particles[kNumInstance];
     for (uint32_t index = 0; index < kNumInstance; ++index) {
@@ -1412,6 +1418,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         particles[index].transform.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
         // 速度を上向きに設定
         particles[index].velocity = { 0.0f, 1.0f, 0.0f };
+        // 位置と速度を[-1,1]でランダムに初期化
+        particles[index].transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+        particles[index].velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
     }
 
     // Δtを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い
