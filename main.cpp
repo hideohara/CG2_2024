@@ -29,7 +29,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-
+#include "Input.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -1273,8 +1273,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // --------------------------------------
 
+
+    // 入力の初期化
+    Input* input;
+    input = new Input();
+    input->Initialize(wc.hInstance, hwnd);
+
+/*
     // DirectInputの初期化
     IDirectInput8* directInput = nullptr;
+
     LRESULT result = DirectInput8Create(
         wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
     assert(SUCCEEDED(result));
@@ -1293,14 +1301,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
     assert(SUCCEEDED(result));
 
-
+*/
 
     // --------------------------------------
 
 
 
-    BYTE key[256] = {};
-    BYTE preKey[256] = {};
+
 
     MSG msg{};
     // ウィンドウの×ボタンが押されるまでループ
@@ -1313,19 +1320,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         else {
         }
 
-        for (int i = 0; i < 256; i++) {
-            preKey[i] = key[i];
-        }
+        //for (int i = 0; i < 256; i++) {
+        //    preKey[i] = key[i];
+        //}
 
         // キーボード情報の取得開始
-        keyboard->Acquire();
+        //keyboard->Acquire();
         // 全キーの入力状態を取得する
-        keyboard->GetDeviceState(sizeof(key), key);
+        //keyboard->GetDeviceState(sizeof(key), key);
+
+        // 入力の更新
+        input->Update();
+
+
 
         // 数字の0キーが押されていたら
-        if (key[DIK_0] && preKey[DIK_0]==0)
+        //if (key[DIK_0] && preKey[DIK_0]==0)
+        //{
+        //    OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
+        //}
+        if (input->TriggerKey(DIK_0)) // 数字の0キーが押されていたら
         {
-            OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
+            OutputDebugStringA("Hit 0\n");
         }
 
 
@@ -1501,6 +1517,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+    // 入力解放
+    delete input;
+
 
     indexResourceSprite->Release();
     vertexResourceSprite->Release();
