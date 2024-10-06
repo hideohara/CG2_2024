@@ -29,6 +29,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib, "dxcompiler.lib")
 
 #include <random>
+#include <numbers>
 
 struct Vector4 {
     float x;
@@ -143,6 +144,32 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 
     return result;
 }
+
+// 掛け算が必要
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
+    return Multiply(m1, m2);
+}
+
+// 平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+    return {
+      1.0f, 0.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f, 0.0f,
+      0.0f, 0.0f, 1.0f, 0.0f,
+      translate.x, translate.y, translate.z, 1.0f,
+    };
+}
+
+// 拡大行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+    return {
+      scale.x, 0.0f, 0.0f, 0.0f,
+      0.0f, scale.y, 0.0f, 0.0f,
+      0.0f, 0.0f, scale.z, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f,
+    };
+}
+
 
 Matrix4x4 MakeRotateXMatrix(float radian) {
     float cosTheta = std::cos(radian);
@@ -1274,7 +1301,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
     
     // Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
-    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+    //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+    Transform cameraTransform{
+        {1.0f, 1.0f, 1.0f},
+        {std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f}, {0.0f, 23.0f, 10.0f} 
+    };
 
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
@@ -1468,7 +1499,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     const float kDeltaTime = 1.0f / 60.0f;
 
     bool useUpdate = false;
-
+    bool useBillboard = false;
     // --------------------------------------
 
     MSG msg{};
@@ -1492,6 +1523,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::ColorEdit4("material", &materialData->x, ImGuiColorEditFlags_AlphaPreview);
         ImGui::SliderAngle("rotate.y", &transform.rotate.y);
         ImGui::Checkbox("Update", &useUpdate);
+        ImGui::Checkbox("Billboard", &useBillboard);
         ImGui::End();
 
 
@@ -1508,17 +1540,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         // instancing
         Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-        //for (uint32_t index = 0; index < kNumInstance; ++index) {
-        //    particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 
-        //    instancingData[index].color = particles[index].color;
-
-        //    Matrix4x4 worldMatrix =
-        //        MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
-        //    Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-        //    instancingData[index].WVP = worldViewProjectionMatrix;
-        //    instancingData[index].World = worldMatrix;
-        //}
+        // ビルボード
+        Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+        Matrix4x4 billboardMatrix = MakeIdentity4x4();    
+        billboardMatrix = Multiply(billboardMatrix, backToFrontMatrix);
+        if (useBillboard) {
+            billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+            billboardMatrix = Multiply(backToFrontMatrix, billboardMatrix);
+            billboardMatrix.m[3][0] = 0.0f; // 平行移動成分はいらない
+            billboardMatrix.m[3][1] = 0.0f;
+            billboardMatrix.m[3][2] = 0.0f;
+        }
 
         uint32_t numInstance = 0;// 描画すべきインスタンス数
         for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
@@ -1531,8 +1564,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 particles[index].currentTime += kDeltaTime;// 経過時間を足す
             }
 
-            Matrix4x4 worldMatrix =
-                MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+            //Matrix4x4 worldMatrix =
+            //    MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+
+            Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+            Matrix4x4 rotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) * MakeRotateYMatrix(particles[index].transform.rotate.y) * MakeRotateZMatrix(particles[index].transform.rotate.z);
+            Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+
+            Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+
+
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
             float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
