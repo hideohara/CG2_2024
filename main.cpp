@@ -1467,6 +1467,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // Δtを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い
     const float kDeltaTime = 1.0f / 60.0f;
 
+    bool useUpdate = false;
+
     // --------------------------------------
 
     MSG msg{};
@@ -1489,6 +1491,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::Begin("Settings");
         ImGui::ColorEdit4("material", &materialData->x, ImGuiColorEditFlags_AlphaPreview);
         ImGui::SliderAngle("rotate.y", &transform.rotate.y);
+        ImGui::Checkbox("Update", &useUpdate);
         ImGui::End();
 
 
@@ -1523,15 +1526,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 continue;
             }
             // …WorldMatrixを求めたりなんだり...
-            particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+            if (useUpdate) {
+                particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+                particles[index].currentTime += kDeltaTime;// 経過時間を足す
+            }
+
             Matrix4x4 worldMatrix =
                 MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
             float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
-            particles[index].transform.translate += particles[index].velocity * kDeltaTime;
-            particles[index].currentTime += kDeltaTime;// 経過時間を足す
             instancingData[numInstance].WVP = worldViewProjectionMatrix;
             instancingData[numInstance].World = worldMatrix;
             instancingData[numInstance].color = particles[index].color;
