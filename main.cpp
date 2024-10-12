@@ -459,7 +459,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
         if (identifier == "v") {
             Vector4 position;
             s >> position.x >> position.y >> position.z;
-            position.z *= -1.0f;
+            //position.z *= -1.0f;
+            position.x *= -1.0f;
             position.w = 1.0f;
             positions.push_back(position);
         }
@@ -1543,15 +1544,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         // ビルボード
         Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+
         Matrix4x4 billboardMatrix = MakeIdentity4x4();    
-        billboardMatrix = Multiply(billboardMatrix, backToFrontMatrix);
         if (useBillboard) {
             billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
-            billboardMatrix = Multiply(backToFrontMatrix, billboardMatrix);
             billboardMatrix.m[3][0] = 0.0f; // 平行移動成分はいらない
             billboardMatrix.m[3][1] = 0.0f;
             billboardMatrix.m[3][2] = 0.0f;
         }
+        //billboardMatrix = Multiply(backToFrontMatrix, billboardMatrix);
 
         uint32_t numInstance = 0;// 描画すべきインスタンス数
         for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
