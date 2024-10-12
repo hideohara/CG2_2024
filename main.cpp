@@ -1450,8 +1450,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::Begin("Settings");
         ImGui::ColorEdit4("material", &materialData->color.x, ImGuiColorEditFlags_AlphaPreview);
         ImGui::SliderAngle("rotate.y", &transform.rotate.y);
-        ImGui::DragFloat3("Light Dir", &directionalLightData->direction.x);
+        ImGui::DragFloat3("Light Dir", &directionalLightData->direction.x, 0.01f);
         ImGui::DragFloat4("Light Color", &directionalLightData->color.x);
+        ImGui::DragFloat("Intensity", &directionalLightData->intensity, 0.01f, 0.0f, 3.0f);
         ImGui::End();
 
 
