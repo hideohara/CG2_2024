@@ -1197,10 +1197,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
     // モデル読み込み
-    ModelData modelData = LoadObjFile("resources", "plane.obj");
+    //ModelData modelData = LoadObjFile("resources", "plane.obj");
     //ModelData modelData = LoadObjFile("resources", "axis.obj");
     //ModelData modelData = LoadObjFile("resources", "cube.obj");
     //ModelData modelData = LoadObjFile("resources", "player.obj");
+    ModelData modelData = LoadObjFile("resources", "fence.obj");
     // 頂点リソースを作る
     ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
