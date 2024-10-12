@@ -1316,7 +1316,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // Textureを読んで転送する
     //DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
-    DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePath);
+    //DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePath);
+    DirectX::ScratchImage mipImages = LoadTexture("resources/circle.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
     UploadTextureData(textureResource, mipImages);
@@ -1516,7 +1517,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // Δtを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い
     const float kDeltaTime = 1.0f / 60.0f;
 
-
+    bool useUpdate = false;
 
     // --------------------------------------
 
@@ -1543,6 +1544,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::DragFloat3("Light Dir", &directionalLightData->direction.x, 0.01f);
         ImGui::DragFloat4("Light Color", &directionalLightData->color.x);
         ImGui::DragFloat("Intensity", &directionalLightData->intensity, 0.01f, 0.0f, 3.0f);
+        ImGui::Checkbox("Update", &useUpdate);
         ImGui::End();
 
 
@@ -1579,8 +1581,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 continue;
             }
             // …WorldMatrixを求めたりなんだり...
-            particles[index].transform.translate += particles[index].velocity * kDeltaTime;
-            particles[index].currentTime += kDeltaTime;// 経過時間を足す
+            //particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+            //particles[index].currentTime += kDeltaTime;// 経過時間を足す
+            if (useUpdate) {
+                particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+                particles[index].currentTime += kDeltaTime;// 経過時間を足す
+            }
+
             float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
             Matrix4x4 worldMatrix =
