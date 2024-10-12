@@ -23,6 +23,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include <fstream>
 #include <sstream>
 #include <random>
+#include <numbers>
 
 
 #pragma comment(lib, "d3d12.lib")
@@ -132,6 +133,34 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 
     return result;
 }
+
+
+// 掛け算が必要
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
+    return Multiply(m1, m2);
+}
+
+// 平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+    return {
+      1.0f, 0.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f, 0.0f,
+      0.0f, 0.0f, 1.0f, 0.0f,
+      translate.x, translate.y, translate.z, 1.0f,
+    };
+}
+
+// 拡大行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+    return {
+      scale.x, 0.0f, 0.0f, 0.0f,
+      0.0f, scale.y, 0.0f, 0.0f,
+      0.0f, 0.0f, scale.z, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f,
+    };
+}
+
+
 
 Matrix4x4 MakeRotateXMatrix(float radian) {
     float cosTheta = std::cos(radian);
@@ -1144,8 +1173,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // RasiterzerStateの設定
     D3D12_RASTERIZER_DESC rasterizerDesc{};
     // 裏面（時計回り）を表示しない
-    //rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+    //rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
     // 三角形の中を塗りつぶす
     rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -1292,10 +1321,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // Transform変数を作る
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
     
-    Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
+    //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
     //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
 
     //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, std::numbers::pi_v<float>, 0.0f}, {0.0f, 4.0f, 10.0f} };
+    Transform cameraTransform{
+        {1.0f, 1.0f, 1.0f},
+        {std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f}, {0.0f, 23.0f, 10.0f} 
+    };
 
 
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
@@ -1518,6 +1551,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     const float kDeltaTime = 1.0f / 60.0f;
 
     bool useUpdate = false;
+    bool useBillboard = false;
 
     // --------------------------------------
 
@@ -1545,6 +1579,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::DragFloat4("Light Color", &directionalLightData->color.x);
         ImGui::DragFloat("Intensity", &directionalLightData->intensity, 0.01f, 0.0f, 3.0f);
         ImGui::Checkbox("Update", &useUpdate);
+        ImGui::Checkbox("Billboard", &useBillboard);
         ImGui::End();
 
 
@@ -1574,24 +1609,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //    instancingData[index].World = worldMatrix;
         //}
 
+        Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 
         uint32_t numInstance = 0;// 描画すべきインスタンス数
         for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
             if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
                 continue;
             }
-            // …WorldMatrixを求めたりなんだり...
-            //particles[index].transform.translate += particles[index].velocity * kDeltaTime;
-            //particles[index].currentTime += kDeltaTime;// 経過時間を足す
             if (useUpdate) {
                 particles[index].transform.translate += particles[index].velocity * kDeltaTime;
                 particles[index].currentTime += kDeltaTime;// 経過時間を足す
             }
 
+            Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+            Matrix4x4 rotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) * MakeRotateYMatrix(particles[index].transform.rotate.y) * MakeRotateZMatrix(particles[index].transform.rotate.z);
+            Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+
+
+            //Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+            //billboardMatrix.m[3][0] = 0.0f; // 平行移動成分はいらない
+            //billboardMatrix.m[3][1] = 0.0f;
+            //billboardMatrix.m[3][2] = 0.0f;
+            Matrix4x4 billboardMatrix = MakeIdentity4x4();
+            if (useBillboard) {
+                billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+                billboardMatrix.m[3][0] = 0.0f;
+                billboardMatrix.m[3][1] = 0.0f;
+                billboardMatrix.m[3][2] = 0.0f;
+            }
+
+            Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+
+
             float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
-            Matrix4x4 worldMatrix =
-                MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+            //Matrix4x4 worldMatrix =
+            //    MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
             instancingData[numInstance].WVP = worldViewProjectionMatrix;
