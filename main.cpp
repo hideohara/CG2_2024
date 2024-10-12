@@ -1116,6 +1116,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 
+    // 加算合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+    // 減算合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+    // 乗算合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+
+    // スクリーン合成
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+
     // 以下は変更しない
     blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -1551,7 +1572,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //commandList->DrawInstanced(6, 1, 0, 0);
         commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
         
-        
+        /*
         // Spriteの描画。変更が必要なものだけ変更する
         commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);   // VBVを設定
         // インデックス
@@ -1561,7 +1582,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // TransformationMatrixCBufferの場所を設定
         commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
         commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-      
+      */
 
 
 
