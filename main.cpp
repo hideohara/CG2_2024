@@ -113,7 +113,32 @@ struct Emitter {
     float frequencyTime; //!< 頻度用時刻
 };
 
+struct AABB {
+    Vector3 min;
+    Vector3 max;
+};
+
+struct AccelerationField {
+    Vector3 acceleration;   //!< 加速度
+    AABB area;  //!< 範囲
+};
+
+
+
 // ----------------------------------------------
+
+////bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
+//bool IsCollision(const AABB & aabb1, const Vector3 & aabb2) {
+//        return (aabb1.min.x <= aabb2.x && aabb1.max.x >= aabb2.x) && // x軸
+//        (aabb1.min.y <= aabb2.y && aabb1.max.y >= aabb2.y) && // y軸
+//        (aabb1.min.z <= aabb2.z && aabb1.max.z >= aabb2.z);   // z軸
+//}
+
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+    return (aabb.min.x <= point.x && aabb.max.x >= point.x) &&
+        (aabb.min.y <= point.y && aabb.max.y >= point.y) &&
+        (aabb.min.z <= point.z && aabb.max.z >= point.z);
+}
 
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
     Matrix4x4 result;
@@ -1594,6 +1619,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // --------------------------------------
 
+    bool useField = false;
+
+    AccelerationField accelerationField;
+    accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
+    accelerationField.area.min = { -1.0f, -1.0f, -1.0f };
+    accelerationField.area.max = { 1.0f, 1.0f, 1.0f };
+
+    // --------------------------------------
+
+
     MSG msg{};
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -1620,6 +1655,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //ImGui::Checkbox("Update", &useUpdate);
         ImGui::Checkbox("Billboard", &useBillboard);
         ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+        ImGui::Checkbox("Field", &useField);
 
         //if (ImGui::Button("Add Particle")) {
         //    particles.splice(particles.end(), Emit(emitter, randomEngine));
@@ -1670,6 +1706,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
                 particleIterator = particles.erase(particleIterator); // 生存期間が過ぎたParticleはlistから消す。戻り値が次のイテレータとなる
                 continue;
+            }
+
+            // Fieldの範囲内のParticleには加速度を適用する
+            if (useField) {
+                if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+                    (*particleIterator).velocity += accelerationField.acceleration * kDeltaTime;
+                }
             }
 
             //if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
