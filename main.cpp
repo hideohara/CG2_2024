@@ -92,6 +92,19 @@ struct DirectionalLight {
     float intensity; //!< 輝度
 };
 
+float Dot(const Vector3& v1, const Vector3& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
+
+float Length(const Vector3& v) { return std::sqrt(Dot(v, v)); }
+
+Vector3 Normalize(const Vector3& v) {
+    float length = Length(v);
+    if (length == 0.0f) {
+        return v;
+    }
+    return { v.x / length, v.y / length, v.z / length };
+}
+
+
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
     Matrix4x4 result;
     result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
@@ -1466,6 +1479,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::Checkbox("useMonsterBall", &useMonsterBall);
         ImGui::DragFloat3("light", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
         ImGui::End();
+
+        // 方向は正規化
+        directionalLightData->direction = Normalize(directionalLightData->direction);
 
 
         //transform.rotate.y += 0.03f;
