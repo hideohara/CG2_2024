@@ -79,6 +79,7 @@ struct ModelData {
 struct Material {
     Vector4 color;
     int32_t enableLighting;
+    float shininess;
 };
 
 struct TransformationMatrix {
@@ -91,6 +92,11 @@ struct DirectionalLight {
     Vector3 direction; //!< ライトの向き
     float intensity; //!< 輝度
 };
+
+struct CameraForGPU {
+    Vector3 worldPosition;
+};
+
 
 float Dot(const Vector3& v1, const Vector3& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
 
@@ -978,7 +984,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // RootParameter作成。複数設定できるので配列。今回は結果1つだけなので長さ1の配列
-    D3D12_ROOT_PARAMETER rootParameters[4] = {};
+    D3D12_ROOT_PARAMETER rootParameters[5] = {};
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;    // CBVを使う
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;   // PixelShaderで使う
     rootParameters[0].Descriptor.ShaderRegister = 0;    // レジスタ番号0とバインド
@@ -992,6 +998,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;    // CBVを使う
     rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;   // PixelShdaderで使う
     rootParameters[3].Descriptor.ShaderRegister = 1;    // レジスタ番号1を使う
+    rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;    // CBVを使う
+    rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;   // PixelShdaderで使う
+    rootParameters[4].Descriptor.ShaderRegister = 2;    // レジスタ番号２を使う
 
     descriptionRootSignature.pParameters = rootParameters;  // ルートパラメータ配列へのポインタ
     descriptionRootSignature.NumParameters = _countof(rootParameters);  // 配列の長さ
@@ -1233,6 +1242,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // マテリアルの内容
     materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
     materialData->enableLighting = true;
+    materialData->shininess = 70;
 
     // Sprite用のマテリアルリソースを作る
     ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
@@ -1453,7 +1463,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
     directionalLightData->intensity = 1.0f;
 
+    // --------------------------------------
 
+    // カメラ用のリソースを作る。
+    ID3D12Resource* cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
+    // マテリアルにデータを書き込む
+    CameraForGPU* cameraData = nullptr;
+    // 書き込むためのアドレスを取得
+    cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+    // カメラと同じ位置に指定
+    cameraData->worldPosition = { 0.0f, 4.0f, -10.0f };
+
+    // --------------------------------------
 
 
     MSG msg{};
@@ -1563,7 +1584,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
         // DirectionalLightのCBufferの場所を設定(ドローコールの前に挿入)
         commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-        // 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
+        // cameraのCBufferの場所を設定
+        commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());        // 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
         //commandList->DrawInstanced(6, 1, 0, 0);
         commandList->DrawInstanced(kVertexCount, 1, 0, 0);
         //commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
@@ -1654,6 +1676,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
+    cameraResource->Release();
     directionalLightResource->Release();
     indexResourceSprite->Release();
     vertexResourceSprite->Release();
