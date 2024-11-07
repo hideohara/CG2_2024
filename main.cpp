@@ -1472,7 +1472,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // 書き込むためのアドレスを取得
     cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
     // カメラと同じ位置に指定
-    cameraData->worldPosition = { 0.0f, 4.0f, -10.0f };
+    cameraData->worldPosition = cameraTransform.translate;  //{ 0.0f, 4.0f, -10.0f };
 
     // --------------------------------------
 
@@ -1604,7 +1604,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // 描画！（DrawCall/ドローコール）
         //commandList->DrawInstanced(6, 1, 0, 0);
         // 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
-        commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+        //commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
         
 
 
