@@ -1228,7 +1228,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // 入力の初期化
     Input* input;
     input = new Input();
-    input->Initialize(winApp->GetHInstance(),winApp->GetHwnd());
+    input->Initialize(winApp);
 
 /*
     // DirectInputの初期化
@@ -1506,13 +1506,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
     debugController->Release();
 #endif
-    CloseWindow(winApp->GetHwnd());
+   // CloseWindow(winApp->GetHwnd());
+
+   // WindowsAPIの終了処理
+    winApp->Finalize();
 
     // 入力解放
     delete input;
 
     // WindowsAPI解放
     delete winApp;
+
 
     // リソースリークチェック
     IDXGIDebug1* debug;
@@ -1523,7 +1527,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         debug->Release();
     }
 
-    CoUninitialize();
+   //CoUninitialize();
 
 
     return 0;

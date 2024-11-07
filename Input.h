@@ -8,6 +8,8 @@
 #include <wrl.h>
 //using namespace Microsoft::WRL;
 
+#include "WinApp.h"
+
 
 class Input
 {
@@ -17,7 +19,7 @@ public: // メンバ関数
     template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     // 初期化
-    void Initialize(HINSTANCE hInstance, HWND hwnd);
+    void Initialize(WinApp* winApp);
 
 
     // 更新
@@ -52,6 +54,10 @@ private:
 
     BYTE key[256] = {};
     BYTE keyPre[256] = {};
+
+
+    // WindowsAPI
+    WinApp* winApp = nullptr;
 
 
 };

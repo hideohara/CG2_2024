@@ -24,6 +24,11 @@ public: // メンバ関数
     HINSTANCE GetHInstance() const { return wc.hInstance; }
 
 
+    // 終了
+    void Finalize();
+
+
+
 
 
 private:
