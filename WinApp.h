@@ -28,6 +28,11 @@ public: // メンバ関数
     void Finalize();
 
 
+    // メッセージの処理
+    bool ProcessMessage();
+
+
+
 
 
 
