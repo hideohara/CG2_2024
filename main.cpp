@@ -676,7 +676,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     winApp = new WinApp();
     winApp->Initialize();
 
-
+    // 入力の初期化
+    Input* input;
+    input = new Input();
+    input->Initialize(winApp);
 
 
     // ***********************************
@@ -1001,6 +1004,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     assert(SUCCEEDED(hr));
 
 
+
+
+    // ビューポート
+    D3D12_VIEWPORT viewport{};
+    // クライアント領域のサイズと一緒にして画面全体に表示
+    viewport.Width = WinApp::kClientWidth;
+    viewport.Height = WinApp::kClientHeight;
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+
+    // シザー矩形
+    D3D12_RECT scissorRect{};
+    // 基本的にビューポートと同じ矩形が構成されるようにする
+    scissorRect.left = 0;
+    scissorRect.right = WinApp::kClientWidth;
+    scissorRect.top = 0;
+    scissorRect.bottom = WinApp::kClientHeight;
+
+
+    // ImGuiの初期化。詳細はさして重要ではないので解説は省略する。
+    // こういうもんである
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplWin32_Init(winApp->GetHwnd());
+    ImGui_ImplDX12_Init(device,
+        swapChainDesc.BufferCount,
+        rtvDesc.Format,
+        srvDescriptorHeap,
+        srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+        srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+
+    // ******************************************************
+
     //ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
     // モデル読み込み
     ModelData modelData = LoadObjFile("resources", "plane.obj");
@@ -1073,44 +1113,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     *wvpData = MakeIdentity4x4();
 
 
-    // ビューポート
-    D3D12_VIEWPORT viewport{};
-    // クライアント領域のサイズと一緒にして画面全体に表示
-    viewport.Width = WinApp::kClientWidth;
-    viewport.Height = WinApp::kClientHeight;
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-
-    // シザー矩形
-    D3D12_RECT scissorRect{};
-    // 基本的にビューポートと同じ矩形が構成されるようにする
-    scissorRect.left = 0;
-    scissorRect.right = WinApp::kClientWidth;
-    scissorRect.top = 0;
-    scissorRect.bottom = WinApp::kClientHeight;
-
     // Transform変数を作る
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-    
+
     // Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -15.0f} };
     Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
 
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-
-    // ImGuiの初期化。詳細はさして重要ではないので解説は省略する。
-    // こういうもんである
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplWin32_Init(winApp->GetHwnd());
-    ImGui_ImplDX12_Init(device,
-        swapChainDesc.BufferCount,
-        rtvDesc.Format,
-        srvDescriptorHeap,
-        srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-        srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
     // Textureを読んで転送する
@@ -1224,11 +1233,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // --------------------------------------
 
-
-    // 入力の初期化
-    Input* input;
-    input = new Input();
-    input->Initialize(winApp);
 
 /*
     // DirectInputの初期化
