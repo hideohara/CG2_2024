@@ -912,7 +912,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む
     // ディスクリプタの先頭を取得する
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    //D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     // RTVを2つ作るのでディスクリプタを2つ用意
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
     // まず1つ目を作る。1つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
