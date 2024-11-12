@@ -1485,22 +1485,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         else {
         }
 
-        for (int i = 0; i < 256; i++)
-        {
-            preKey[i] = key[i];
-        }
 
-        // キーボード情報の取得開始
-        keyboard->Acquire();
+        // 入力の更新
+        input->Update();
 
-        // 全キーの入力状態を取得する
-        keyboard->GetDeviceState(sizeof(key), key);
 
-        // 数字の0キーが押されていたら
-        if (key[DIK_0] && !preKey[DIK_0])
-        {
-            OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
-        }
+        //// 数字の0キーが押されていたら
+        //if (key[DIK_0] && !preKey[DIK_0])
+        //{
+        //    OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
+        //}
 
 
 
