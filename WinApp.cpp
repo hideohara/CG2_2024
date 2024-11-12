@@ -1,6 +1,5 @@
 #include "WinApp.h"
 
-#include <cstdint>
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -34,7 +33,7 @@ void WinApp::Initialize()
     // 出力ウィンドウへの文字出力
     OutputDebugStringA("Hello, DirectX!\n");
 
-    WNDCLASS wc{};
+    
     // ウィンドウプロシージャ
     wc.lpfnWndProc = WindowProc;
     // ウィンドウクラス名(なんでも良い)
@@ -47,9 +46,7 @@ void WinApp::Initialize()
     // ウィンドウクラスを登録する
     RegisterClass(&wc);
 
-    // クライアント領域のサイズ
-    const int32_t kClientWidth = 1280;
-    const int32_t kClientHeight = 720;
+
 
     // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0, 0, kClientWidth, kClientHeight };
@@ -57,7 +54,7 @@ void WinApp::Initialize()
     // クライアント領域を元に実際のサイズにwrcを変更してもらうAdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
     // ウィンドウの生成
-    HWND hwnd = CreateWindow(
+    hwnd = CreateWindow(
         wc.lpszClassName,       // 利用するクラス名
         L"GE3_2024",                 // タイトルバーの文字（何でも良い）
         WS_OVERLAPPEDWINDOW,    // よく見るウィンドウスタイル
@@ -70,7 +67,8 @@ void WinApp::Initialize()
         wc.hInstance,           // インスタンスハンドル
         nullptr);               // オプション
 
-
+    // ウィンドウを表示する
+    ShowWindow(hwnd, SW_SHOW);
 }
 
 void WinApp::Update()

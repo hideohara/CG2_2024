@@ -1,11 +1,15 @@
 #pragma once
 
 #include <Windows.h>
+#include <cstdint>
 
 class WinApp
 {
 public: // 静的メンバ関数
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    // クライアント領域のサイズ
+    static const int32_t kClientWidth = 1280;
+    static const int32_t kClientHeight = 720;
 
 public: // メンバ関数
     // 初期化
@@ -14,5 +18,17 @@ public: // メンバ関数
     void Update();
 
 
+    // getter
+    HWND GetHwnd() const { return hwnd; }
+
+    // getter
+    HINSTANCE GetHInstance() const { return wc.hInstance; }
+
+
+
+
+private:
+    HWND hwnd = nullptr;
+    WNDCLASS wc{};
 };
 
