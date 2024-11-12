@@ -714,6 +714,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
+
+
+
     CoInitializeEx(0, COINIT_MULTITHREADED);
 
     // 出力ウィンドウへの文字出力
@@ -754,6 +757,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         nullptr,                // メニューハンドル
         wc.hInstance,           // インスタンスハンドル
         nullptr);               // オプション
+
+
+
+    // ポインタ
+    Input* input = nullptr;
+    // 入力の初期化
+    input = new Input();
+    input->Initialize(wc.hInstance, hwnd);
 
 
     // ***********************************
@@ -1112,6 +1123,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
+
+
+    // ビューポート
+    D3D12_VIEWPORT viewport{};
+    // クライアント領域のサイズと一緒にして画面全体に表示
+    viewport.Width = kClientWidth;
+    viewport.Height = kClientHeight;
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+
+    // シザー矩形
+    D3D12_RECT scissorRect{};
+    // 基本的にビューポートと同じ矩形が構成されるようにする
+    scissorRect.left = 0;
+    scissorRect.right = kClientWidth;
+    scissorRect.top = 0;
+    scissorRect.bottom = kClientHeight;
+
+    // -----------------------
+
     const uint32_t kSubdivision = 16; //分割数
     const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
 
@@ -1143,29 +1176,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     VertexData* vertexData = nullptr;
     // 書き込むためのアドレスを取得
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-/*
-    // 左下
-    vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-    vertexData[0].texcoord = { 0.0f, 1.0f };
-    // 上
-    vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-    vertexData[1].texcoord = { 0.5f, 0.0f };
-    // 右下
-    vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-    vertexData[2].texcoord = { 1.0f, 1.0f };
+    /*
+        // 左下
+        vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+        vertexData[0].texcoord = { 0.0f, 1.0f };
+        // 上
+        vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+        vertexData[1].texcoord = { 0.5f, 0.0f };
+        // 右下
+        vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+        vertexData[2].texcoord = { 1.0f, 1.0f };
 
-    // 左下2
-    vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
-    vertexData[3].texcoord = { 0.0f, 1.0f };
-    // 上2
-    vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexData[4].texcoord = { 0.5f, 0.0f };
-    // 右下2
-    vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
-    vertexData[5].texcoord = { 1.0f, 1.0f };
-*/
+        // 左下2
+        vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
+        vertexData[3].texcoord = { 0.0f, 1.0f };
+        // 上2
+        vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+        vertexData[4].texcoord = { 0.5f, 0.0f };
+        // 右下2
+        vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
+        vertexData[5].texcoord = { 1.0f, 1.0f };
+    */
 
-//球体用頂点
+    //球体用頂点
     const float kPi = std::numbers::pi_v<float>;
     const float kLonEvery = (2 * kPi) / float(kSubdivision); //経度分割1つ分の角度
     const float kLatEvery = kPi / float(kSubdivision); //緯度分割1つ分の角度
@@ -1262,23 +1295,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     wvpData->World = MakeIdentity4x4();
 
 
-    // ビューポート
-    D3D12_VIEWPORT viewport{};
-    // クライアント領域のサイズと一緒にして画面全体に表示
-    viewport.Width = kClientWidth;
-    viewport.Height = kClientHeight;
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-
-    // シザー矩形
-    D3D12_RECT scissorRect{};
-    // 基本的にビューポートと同じ矩形が構成されるようにする
-    scissorRect.left = 0;
-    scissorRect.right = kClientWidth;
-    scissorRect.top = 0;
-    scissorRect.bottom = kClientHeight;
 
     // Transform変数を作る
     Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
@@ -1462,12 +1478,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // -----------------------------------------------
-
-    // ポインタ
-    Input* input = nullptr;
-    // 入力の初期化
-    input = new Input();
-    input->Initialize(wc.hInstance, hwnd);
 
 
 
