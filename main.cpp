@@ -31,6 +31,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 
+
+#define DIRECTINPUT_VERSION     0x0800   // DirectInputのバージョン指定
+#include <dinput.h>
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
+
+
+
+
 struct Vector4 {
     float x;
     float y;
@@ -1454,6 +1463,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     directionalLightData->intensity = 1.0f;
 
 
+    // -----------------------------------------------
+    // DirectInputの初期化
+    HRESULT result;
+    IDirectInput8* directInput = nullptr;
+    result = DirectInput8Create(
+        wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+    assert(SUCCEEDED(result));
+
+    // キーボードデバイスの生成
+    IDirectInputDevice8* keyboard = nullptr;
+    result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+    assert(SUCCEEDED(result));
+
+    // 入力データ形式のセット
+    result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
+    assert(SUCCEEDED(result));
+
+    // 排他制御レベルのセット
+    result = keyboard->SetCooperativeLevel(
+        hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+    assert(SUCCEEDED(result));
+
+    BYTE key[256] = {};
+    BYTE preKey[256] = {};
+
+    // ------------------------------------------------
 
 
     MSG msg{};
@@ -1466,6 +1501,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         }
         else {
         }
+
+        for (int i = 0; i < 256; i++)
+        {
+            preKey[i] = key[i];
+        }
+
+        // キーボード情報の取得開始
+        keyboard->Acquire();
+
+        // 全キーの入力状態を取得する
+        keyboard->GetDeviceState(sizeof(key), key);
+
+        // 数字の0キーが押されていたら
+        if (key[DIK_0] && !preKey[DIK_0])
+        {
+            OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
+        }
+
+
 
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
