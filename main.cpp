@@ -32,10 +32,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib, "dxcompiler.lib")
 
 
-#define DIRECTINPUT_VERSION     0x0800   // DirectInputのバージョン指定
-#include <dinput.h>
-#pragma comment(lib, "dinput8.lib")
-#pragma comment(lib, "dxguid.lib")
+#include "Input.h"
+
 
 
 
@@ -1464,29 +1462,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     // -----------------------------------------------
-    // DirectInputの初期化
-    HRESULT result;
-    IDirectInput8* directInput = nullptr;
-    result = DirectInput8Create(
-        wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
-    assert(SUCCEEDED(result));
 
-    // キーボードデバイスの生成
-    IDirectInputDevice8* keyboard = nullptr;
-    result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-    assert(SUCCEEDED(result));
+    // ポインタ
+    Input* input = nullptr;
+    // 入力の初期化
+    input = new Input();
+    input->Initialize(wc.hInstance, hwnd);
 
-    // 入力データ形式のセット
-    result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
-    assert(SUCCEEDED(result));
 
-    // 排他制御レベルのセット
-    result = keyboard->SetCooperativeLevel(
-        hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-    assert(SUCCEEDED(result));
-
-    BYTE key[256] = {};
-    BYTE preKey[256] = {};
 
     // ------------------------------------------------
 
@@ -1745,6 +1728,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     debugController->Release();
 #endif
     CloseWindow(hwnd);
+
+    // 入力解放
+    delete input;
+
 
 
     // リソースリークチェック
