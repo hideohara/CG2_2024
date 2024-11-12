@@ -45,3 +45,23 @@ void Input::Update()
     // 全キーの入力状態を取得する
     keyboard->GetDeviceState(sizeof(key), key);
 }
+
+bool Input::PushKey(BYTE keyNumber)
+{
+    // 指定キーを押していればtrueを返す
+    if (key[keyNumber]) {
+        return true;
+    }
+    // そうでなければfalseを返す
+    return false;
+}
+
+bool Input::TriggerKey(BYTE keyNumber)
+{
+    // 指定キーを押していればtrueを返す
+    if (key[keyNumber] && !preKey[keyNumber]) {
+        return true;
+    }
+    // そうでなければfalseを返す
+    return false;
+}

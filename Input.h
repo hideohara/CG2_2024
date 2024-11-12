@@ -21,6 +21,20 @@ public: // メンバ関数
     // 更新
     void Update();
 
+    /// <summary>
+    /// キーの押下をチェック
+    /// </summary>
+    /// <param name="keyNumber">キー番号( DIK_0 等)</param>
+    /// <returns>押されているか</returns>
+    bool PushKey(BYTE keyNumber);
+
+    /// <summary>
+    /// キーのトリガーをチェック
+    /// </summary>
+    /// <param name="keyNumber">キー番号( DIK_0 等)</param>
+    /// <returns>トリガーか</returns>
+    bool TriggerKey(BYTE keyNumber);
+
 private:
     BYTE key[256] = {};
     BYTE preKey[256] = {};

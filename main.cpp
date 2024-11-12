@@ -744,7 +744,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // ウィンドウの生成
     HWND hwnd = CreateWindow(
         wc.lpszClassName,       // 利用するクラス名
-        L"CG2",                 // タイトルバーの文字（何でも良い）
+        L"GE3_2024",                 // タイトルバーの文字（何でも良い）
         WS_OVERLAPPEDWINDOW,    // よく見るウィンドウスタイル
         CW_USEDEFAULT,          // 表示X座標（Windowsに任せる）
         CW_USEDEFAULT,          // 表示Y座標（WindowsOSに任せる）
@@ -1491,10 +1491,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
         //// 数字の0キーが押されていたら
-        //if (key[DIK_0] && !preKey[DIK_0])
-        //{
-        //    OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
-        //}
+        if (input->TriggerKey(DIK_0))
+        {
+            OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
+        }
 
 
 
