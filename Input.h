@@ -12,12 +12,15 @@
 #pragma comment(lib, "dxguid.lib")
 
 
+#include "WinApp.h"
+
+
 class Input
 {
 
 public: // メンバ関数
     // 初期化
-    void Initialize(HINSTANCE hInstance, HWND hwnd);
+    void Initialize(WinApp* winApp);
     // 更新
     void Update();
 
@@ -41,6 +44,11 @@ private:
 
     IDirectInput8* directInput = nullptr;
     IDirectInputDevice8* keyboard = nullptr;
+
+
+    // WindowsAPI
+    WinApp* winApp = nullptr;
+
 
 };
 
