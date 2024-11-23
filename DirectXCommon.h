@@ -16,6 +16,13 @@ public: // メンバ関数
     // 初期化
     void Initialize(WinApp* winApp);
 
+    // 描画前処理
+    void PreDraw();
+
+    // 描画後処理
+    void PostDraw();
+
+
     // デスクリプタヒープを作成する
     ID3D12DescriptorHeap* CreateDescriptorHeap(
         D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
@@ -117,5 +124,14 @@ private:
     // RTVの設定
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 
+    // RTVを2つ作るのでディスクリプタを2つ用意
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+    // TransitionBarrierの設定
+    D3D12_RESOURCE_BARRIER barrier{};
+
+    uint64_t fenceValue = 0;
+    // フェンスイベント
+    HANDLE fenceEvent;
 };
 
