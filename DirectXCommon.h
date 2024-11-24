@@ -1,6 +1,6 @@
 #pragma once
 
-
+/*
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
@@ -9,10 +9,25 @@
 #include "WinApp.h"
 
 
+#include "externals/DirectXTex/DirectXTex.h"
+*/
+
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <wrl.h>
+#include "WinApp.h"
+#include "array"
+#include <dxcapi.h>
+#include <string>
+#include "externals/DirectXTex/DirectXTex.h"
+
 class DirectXCommon
 {
 
 public: // メンバ関数
+
+    template<class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
+
     // 初期化
     void Initialize(WinApp* winApp);
 
@@ -37,6 +52,52 @@ public: // メンバ関数
     /// </summary>
     static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
+    /// <summary>
+    /// SRVの指定番号のCPUデスクリプタハンドルを取得する
+    /// </summary>
+    D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+
+    /// <summary>
+    /// SRVの指定番号のGPUデスクリプタハンドルを取得する
+    /// </summary>
+    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+
+
+
+    // getter
+    ID3D12Device* GetDevice() const { return device; }
+    ID3D12GraphicsCommandList* GetCommandList() const { return commandList; }
+
+
+    // シェーダーのコンパイル
+    IDxcBlob* CompileShader(
+        const std::wstring& filePath,
+        const wchar_t* profile);
+
+
+    /// <summary>
+    /// バッファリソースの生成
+    /// </summary>
+    ID3D12Resource* CreateBufferResource(size_t sizeInBytes);
+
+    /// <summary>
+    /// テクスチャリソースの生成
+    /// </summary>
+    //Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(
+    //    ID3D12Device* device, const DirectX::TexMetadata& metadata);
+    ID3D12Resource* CreateTextureResource(const DirectX::TexMetadata& metadata);
+
+    /// <summary>
+    /// テクスチャデータの転送
+    /// </summary>
+    void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+
+    /// <summary>
+    /// テクスチャファイルの読み込み
+    /// </summary>
+    /// <param name="filePath">テクスチャファイルのパス</param>
+    /// <returns>画像イメージデータ</returns>
+    static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 
 private:
@@ -76,6 +137,8 @@ private:
 
     // ImGuiの初期化
     void ImGuiInitialize();
+
+
 
 private:
     // WindowsAPI
@@ -133,5 +196,14 @@ private:
     uint64_t fenceValue = 0;
     // フェンスイベント
     HANDLE fenceEvent;
+
+    //// DXCユーティリティ
+    //IDxcUtils* dxcUtils = nullptr;
+
+    //// DXCコンパイラ
+    //IDxcCompiler3* dxcCompiler = nullptr;
+
+    //// デフォルトインクルードハンドラ
+    //IDxcIncludeHandler* includeHandler = nullptr;
 };
 
