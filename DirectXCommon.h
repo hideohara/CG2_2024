@@ -99,6 +99,7 @@ public: // メンバ関数
     /// <returns>画像イメージデータ</returns>
     static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
+    void Finish();
 
 private:
     // デバイス生成
@@ -197,13 +198,7 @@ private:
     // フェンスイベント
     HANDLE fenceEvent;
 
-    //// DXCユーティリティ
-    //IDxcUtils* dxcUtils = nullptr;
-
-    //// DXCコンパイラ
-    //IDxcCompiler3* dxcCompiler = nullptr;
-
-    //// デフォルトインクルードハンドラ
-    //IDxcIncludeHandler* includeHandler = nullptr;
+    // 使用するアダプタ用の変数。最初にnullptrを入れておく
+    IDXGIAdapter4* useAdapter = nullptr;
 };
 

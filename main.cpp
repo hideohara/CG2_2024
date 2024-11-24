@@ -1381,11 +1381,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     //std::wstring ConvertString(const std::string & str);
     // wstring->string
     //std::string ConvertString(const std::wstring & str);
-/*
-    // 変数から型を推論してくれる
-    Log(std::format("enemyHp:{}, texturePath:{}\n", 2, "aaaa"));
 
-    CloseHandle(fenceEvent);
+    // 変数から型を推論してくれる
+    //Log(std::format("enemyHp:{}, texturePath:{}\n", 2, "aaaa"));
+
+    //CloseHandle(fenceEvent);
 
     // ImGuiの終了処理。詳細はさして重要ではないので解説は省略する。
     // こういうもんである。初期化と逆順に行う
@@ -1403,6 +1403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     materialResource->Release();
     wvpResource->Release();
     vertexResource->Release();
+
     graphicsPipelineState->Release();
     signatureBlob->Release();
     if (errorBlob) {
@@ -1411,6 +1412,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     rootSignature->Release();
     pixelShaderBlob->Release();
     vertexShaderBlob->Release();
+/*
+
 
     fence->Release();
     dsvDescriptorHeap->Release();
@@ -1432,6 +1435,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     //CloseWindow(winApp->GetHwnd());
 
     */
+    dxCommon->Finish();
 
     // WindowsAPIの終了処理
     winApp->Finalize();

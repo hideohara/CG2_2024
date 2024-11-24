@@ -555,6 +555,27 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 
 }
 
+void DirectXCommon::Finish()
+{
+
+
+    fence->Release();
+    dsvDescriptorHeap->Release();
+    rtvDescriptorHeap->Release();
+    srvDescriptorHeap->Release();
+    depthStencilResource->Release();
+    swapChainResources[0]->Release();
+    swapChainResources[1]->Release();
+    swapChain->Release();
+    commandList->Release();
+    commandAllocator->Release();
+    commandQueue->Release();
+    device->Release();
+    useAdapter->Release();
+    dxgiFactory->Release();
+
+}
+
 void DirectXCommon::DeviceInitialize()
 {
     // DXGIファクトリーの生成
@@ -565,8 +586,7 @@ void DirectXCommon::DeviceInitialize()
     assert(SUCCEEDED(hr));
 
     // 使用するアダプタ（GPU）を決定する -----------------------
-    // 使用するアダプタ用の変数。最初にnullptrを入れておく
-    IDXGIAdapter4* useAdapter = nullptr;
+
     // 良い順にアダプタを頼む
     for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
         // アダプターの情報を取得する
