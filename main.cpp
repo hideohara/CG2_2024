@@ -30,11 +30,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 
 #include "Input.h"
-
 #include "WinApp.h"
-
-
 #include "DirectXCommon.h"
+#include "SpriteCommon.h"
 
 #include "Logger.h"
 #include "StringUtility.h"
@@ -476,6 +474,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // --------------------------------------
 
+    SpriteCommon* spriteCommon = nullptr;
+    // スプライト共通部の初期化
+    spriteCommon = new SpriteCommon;
+    spriteCommon->Initialize(dxCommon);
+
+
+
 
     // RootSignature作成
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -537,6 +542,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     hr = dxCommon->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
     assert(SUCCEEDED(hr));
 
+    // -------------
+
     // InputLayout
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
     inputElementDescs[0].SemanticName = "POSITION";
@@ -592,6 +599,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     IDxcBlob* pixelShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0");
     assert(pixelShaderBlob != nullptr);
+
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
     graphicsPipelineStateDesc.pRootSignature = rootSignature;// RootSignature
@@ -1123,10 +1131,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     CloseWindow(winApp->GetHwnd());
 
 
+    spriteCommon->Finish();
     dxCommon->Finish();
 
     // WindowsAPIの終了処理
     winApp->Finalize();
+
+    // スプライト解放
+    delete spriteCommon;
 
     // DirectX解放
     delete dxCommon;
