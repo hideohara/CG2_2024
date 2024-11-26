@@ -1,17 +1,5 @@
 #pragma once
 
-/*
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <wrl.h>
-#include <dxcapi.h>
-
-#include "WinApp.h"
-
-
-#include "externals/DirectXTex/DirectXTex.h"
-*/
-
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
@@ -20,6 +8,9 @@
 #include <dxcapi.h>
 #include <string>
 #include "externals/DirectXTex/DirectXTex.h"
+
+#include <chrono>
+
 
 class DirectXCommon
 {
@@ -200,5 +191,15 @@ private:
 
     // 使用するアダプタ用の変数。最初にnullptrを入れておく
     IDXGIAdapter4* useAdapter = nullptr;
+
+
+    // FPS固定初期化
+    void InitializeFixFPS();
+    // FPS固定更新
+    void UpdateFixFPS();
+
+    // 記録時間(FPS固定用)
+    std::chrono::steady_clock::time_point reference_;
+
 };
 

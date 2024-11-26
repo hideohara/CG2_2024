@@ -229,6 +229,4 @@ void SpriteCommon::CreateGraphicsPipeline()
     // 実際に生成
     hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
-
-
 }
