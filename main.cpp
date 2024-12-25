@@ -85,6 +85,7 @@ struct Material {
 struct TransformationMatrix {
     Matrix4x4 WVP;
     Matrix4x4 World;
+    Matrix4x4 WorldInverseTranspose;
 };
 
 struct DirectionalLight {
@@ -1263,7 +1264,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // 単位行列を書きこんでおく
     wvpData->WVP = MakeIdentity4x4();
     wvpData->World = MakeIdentity4x4();
-
+    wvpData->WorldInverseTranspose = MakeIdentity4x4();
 
     // ビューポート
     D3D12_VIEWPORT viewport{};
@@ -1499,6 +1500,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ImGui::SliderAngle("rotate.y", &transform.rotate.y);
         ImGui::Checkbox("useMonsterBall", &useMonsterBall);
         ImGui::DragFloat3("light", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f, 0.0f, 10.0f);
         ImGui::End();
 
         // 方向は正規化
