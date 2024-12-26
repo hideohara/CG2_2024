@@ -1294,7 +1294,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     scissorRect.bottom = kClientHeight;
 
     // Transform変数を作る
-    Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+    Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {-1.5f, 0.0f, 0.0f} };
     
     //Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -5.0f} };
     Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
@@ -1384,22 +1384,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
-    /*
-    // 1枚目の三角形
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };// 左下
-    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
-    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };// 左上
-    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };// 右下
-    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
-    // 2枚目の三角形
-    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };// 左上
-    vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };// 右上
-    vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
-    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };// 右下
-    vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
-    */
 
     // 左下
     vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
@@ -1431,7 +1415,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     transformationMatrixDataSprite->World = MakeIdentity4x4();
 
     // CPUで動かす用のTransformを作る
-    Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+    Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f} };
 
 
     // --------------------------------------
@@ -1499,6 +1483,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // ---------------------
 
+
+    // ２個目のWVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
+    ID3D12Resource* wvpResource2 = CreateBufferResource(device, sizeof(TransformationMatrix));
+    // データを書き込む
+    TransformationMatrix* wvpData2 = nullptr;
+    // 書き込むためのアドレスを取得
+    wvpResource2->Map(0, nullptr, reinterpret_cast<void**>(&wvpData2));
+    // 単位行列を書きこんでおく
+    wvpData2->WVP = MakeIdentity4x4();
+    wvpData2->World = MakeIdentity4x4();
+    wvpData2->WorldInverseTranspose = MakeIdentity4x4();
+
+    Transform transform2{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f} };
+
+
+    // -----------------
+
     MSG msg{};
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -1534,6 +1535,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
         //*wvpData = worldMatrix;
 
+        // モデルのアフィン変換
         Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
         Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
         Matrix4x4 viewMatrix = Inverse(cameraMatrix);
@@ -1541,6 +1543,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
         wvpData->WVP = worldViewProjectionMatrix;
         wvpData->World = worldMatrix;
+
+        // モデル2のアフィン変換
+        Matrix4x4 worldMatrix2 = MakeAffineMatrix(transform2.scale, transform2.rotate, transform2.translate);
+        Matrix4x4 worldViewProjectionMatrix2 = Multiply(worldMatrix2, Multiply(viewMatrix, projectionMatrix));
+        wvpData2->WVP = worldViewProjectionMatrix2;
+        wvpData2->World = worldMatrix2;
+
 
         // Sprite用のWorldViewProjectionMatrixを作る
         Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
@@ -1617,7 +1626,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         commandList->DrawInstanced(kVertexCount, 1, 0, 0);
         //commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-        
+        // 2個目の図形を描画
+        commandList->SetGraphicsRootConstantBufferView(1, wvpResource2->GetGPUVirtualAddress());
+        commandList->DrawInstanced(kVertexCount, 1, 0, 0);
+
+
+
         // Spriteの描画。変更が必要なものだけ変更する
         commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);   // VBVを設定
         // マテリアルCBufferの場所を設定
@@ -1632,8 +1646,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         //commandList->DrawInstanced(6, 1, 0, 0);
         // 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
         commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-        
-
 
 
         // 実際のcommandListのImGuiの描画コマンドを積む
@@ -1713,6 +1725,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     textureResource->Release();
     materialResourceSprite->Release();
     materialResource->Release();
+    wvpResource2->Release();
     wvpResource->Release();
     vertexResource->Release();
     graphicsPipelineState->Release();
