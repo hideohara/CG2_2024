@@ -1580,6 +1580,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         directionalLightData->direction = Normalize(directionalLightData->direction);
         spotLightData->direction = Normalize(spotLightData->direction);
 
+        spotLightData->falloffStart = spotLightData->cosAngle * 8.0f / 6.0f;
 
         //transform.rotate.y += 0.03f;
         //Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
