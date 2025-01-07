@@ -129,7 +129,12 @@ PixelShaderOutput main(VertexShaderOutput input)
         float32_t distance3 = length(gSpotLight.position - input.worldPosition); // ポイントライトへの距離
         float32_t attenuationFactor = 1.f / (1.f + gSpotLight.decay * pow(distance3 / gSpotLight.distance, 2.f));
 
-        float32_t3 spotRGB = gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * gSpotLight.intensity * attenuationFactor * falloffFactor;
+        
+        float NdotL3 = dot(normalize(input.normal), -spotDirection);
+        float cos3 = pow(NdotL3 * 0.5f + 0.5f, 2.0f);
+
+        
+        float32_t3 spotRGB = gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * gSpotLight.intensity * attenuationFactor * falloffFactor * cos3;
         //float32_t3 spotRGB = gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * gSpotLight.intensity * falloffFactor;
 
 
